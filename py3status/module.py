@@ -319,19 +319,35 @@ class Module:
             if not isinstance(min_width, int):
                 err = 'invalid "min_width" attribute should be an int'
                 raise TypeError(err)
+            self.i3s_module_options["min_width"] = min_width
 
-            self.py3_module_options['min_width'] = min_width
+        if 'min_width_chars' in mod_config:
+            if 'min_width' in mod_config:
+                err = 'Use either "min_width" or "min_width_chars" but not both' \
+                    ' within the same module'
+                raise TypeError(err)
+            min_width = mod_config['min_width_chars']
+            if not isinstance(min_width, int):
+                err = 'invalid "min_width_chars" attribute should be an int'
+                raise TypeError(err)
+
+            self.py3_module_options['min_width_chars'] = min_width
             self.random_int = randint(0, 1)
 
-            if 'align' in mod_config:
-                align = mod_config['align']
-                if not (isinstance(align, basestring) and
-                        align.lower() in ('left', 'center', 'right')):
-                    err = 'invalid "align" attribute, valid values are:'
-                    err += ' left, center, right'
-                    raise ValueError(err)
+        if (
+            ('min_width' in mod_config or 'min_width_chars' in mod_config) and
+            'align' in mod_config
+        ):
+            align = mod_config['align']
+            if not (
+                isinstance(align, basestring) and
+                align.lower() in ('left', 'center', 'right')
+            ):
+                err = 'invalid "align" attribute, valid values are:'
+                err += ' left, center, right'
+                raise ValueError(err)
 
-                self.py3_module_options['align'] = align
+            self.py3_module_options['align'] = align
 
         if 'separator' in mod_config:
             separator = mod_config['separator']
@@ -413,8 +429,8 @@ class Module:
                 item['urgent'] = urgent
 
         # set min_width
-        if 'min_width' in self.py3_module_options:
-            min_width = self.py3_module_options['min_width']
+        if 'min_width_chars' in self.py3_module_options:
+            min_width = self.py3_module_options['min_width_chars']
 
             # get width, skip if width exceeds min_width
             width = sum([len(x['full_text']) for x in response['composite']])
